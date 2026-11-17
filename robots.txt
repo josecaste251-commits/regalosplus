@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://josecaste251-commits.github.io/regalos-plus-nic/sitemap.xml
+Sitemap: https://josecaste251-commits.github.io/regalosplus/sitemap.xml

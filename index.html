@@ -952,7 +952,33 @@ function aPedidos(v){
 }
 
 /* ---------- inicio ---------- */
-shell();route();
+/* Precios, descripciones y fotos vienen del organizador (precios/catalogo.json).
+   Aquí no se edita nada: todo se cambia en /precios/. */
+function aplicarOrganizador(d){
+ var it=(d&&d.items)||{};var porImg={};
+ S.products.forEach(function(p){if(p.img&&p.img.src)porImg['base:'+p.img.src]=p});
+ Object.keys(it).forEach(function(k){
+  var o=it[k]||{};var p=porImg[k];
+  if(p){
+   if(o.name)p.name=o.name;
+   if(typeof o.desc==='string'&&o.desc.trim())p.desc=o.desc;
+   if('price' in o)p.price=Number(o.price)||0;
+   if(o.hidden)p.published=false;
+   if(o.sec&&p.cats&&p.cats[0]!==o.sec){p.cats=[o.sec].concat(p.cats.filter(function(c){return c!==o.sec}))}
+  }else if(k.indexOf('gh:')===0&&o.img&&!o.hidden){
+   var nm=o.name||'Producto nuevo',base=slugify(nm),sl=base,n=2;
+   while(S.products.some(function(x){return x.slug===sl}))sl=base+'-'+(n++);
+   S.products.push({id:'o'+Math.abs(k.split('').reduce(function(a,c){return (a*31+c.charCodeAt(0))|0},7)),slug:sl,name:nm,desc:o.desc||'',price:Number(o.price)||0,compareAt:null,cats:[o.sec||((S.categories[0]||{}).id)],tag:'',stock:true,featured:false,best:false,published:true,img:{src:o.img},options:[{name:'Nombre o dedicatoria',type:'text',choices:[]}]});
+  }
+ });
+}
+var arrancado=false;
+function arrancar(){if(arrancado)return;arrancado=true;shell();route()}
+setTimeout(arrancar,2500);
+fetch('precios/catalogo.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).then(function(d){
+ if(d){try{aplicarOrganizador(d)}catch(e){}}
+ if(arrancado)route();else arrancar();
+}).catch(arrancar);
 try{if(sessionStorage.getItem('mt-reopen')){sessionStorage.removeItem('mt-reopen');setTimeout(openAdminGate,400)}}catch(e){}
 })();
 </script>

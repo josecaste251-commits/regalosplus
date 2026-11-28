@@ -1,0 +1,122 @@
+{
+ "v": 1,
+ "actualizado": "2026-11-28T03:48:58.655Z",
+ "items": {
+  "base:p4.webp": {
+   "desc": "Peluche de Snoopy, globos metalizados con el número de años y estrellas, rosas rosadas, girasoles mini y chocolates Snickers. Base de madera rosada con lazo.",
+   "sec": "cumpleanos"
+  },
+  "base:p5.webp": {
+   "desc": "Peluche de Snoopy con globo gigante de Snoopy, globo corazón lila con mensaje de cumpleaños y globo espiral plateado. Rosas blancas, flores lila, termo personalizado y base de madera con lazo.",
+   "sec": "cumpleanos"
+  },
+  "base:p1.webp": {
+   "desc": "Bandeja con arco de globos rosa, blanco y dorado con mariposas, bouquet de rosas, postre, frutas (uvas y manzanas) y dulces en frascos. Personalizada con el nombre en la bandeja.",
+   "sec": "cumpleanos"
+  },
+  "base:p2.webp": {
+   "desc": "Gran arreglo de rosas, lirios y margaritas en tonos rosa, con frutas frescas, jugo natural, cajitas de regalo con lazo y toppers de Happy Birthday.",
+   "sec": "cumpleanos"
+  },
+  "base:p3.webp": {
+   "desc": "Arco de globos azul y plateado con mensaje, globo burbuja de cumpleaños, pastel, tabla de embutidos, frutas, galletas, Ferrero Rocher y termo con nombre. Bandeja decorada con el nombre.",
+   "sec": "cumpleanos"
+  },
+  "base:p13.webp": {
+   "desc": "Arco de globos negro, celeste y amarillo, peluche de Snoopy, frutas, uvas, embutidos, jugo, postre y taza temática. Bandeja con el nombre.",
+   "sec": "cumpleanos"
+  },
+  "base:p15.webp": {
+   "desc": "Arco de globos rosa y dorado, globo burbuja con nombre, bouquet de rosas, frutas (kiwi, manzanas y uvas), embutidos, quesos y postre. Bandeja rosada con el nombre.",
+   "sec": "anchetas"
+  },
+  "base:p23.webp": {
+   "desc": "Arco de globos rojo, blanco y dorado con globo burbuja con nombre, rosas rojas, frutas, kiwi, tabla de embutidos y quesos, postre y mensaje personalizado.",
+   "sec": "anchetas"
+  },
+  "base:p31.webp": {
+   "desc": "Arco de globos verde, dorado y blanco con mensaje de Feliz Cumpleaños y nombre, globo burbuja, pastel red velvet, Ferrero Rocher y detalles dulces.",
+   "sec": "anchetas"
+  },
+  "base:p20.webp": {
+   "desc": "Canasta blanca con racimo de globos rosa y crema, flores de temporada, jugo natural, fresas, frutas y postre, con lazo rosado.",
+   "sec": "anchetas"
+  },
+  "base:p6.webp": {
+   "desc": "Gran bouquet de rosas rojas, rosadas y lila con claveles y flores de temporada, envuelto en tul y papel coreano.",
+   "sec": "flores"
+  },
+  "base:p28.webp": {
+   "desc": "Caja redonda rosada con rosas blancas y durazno, flores amarillas, gypsophila y eucalipto, con el nombre de quien recibe en la caja.",
+   "sec": "flores"
+  },
+  "base:p21.webp": {
+   "desc": "Girasoles con rosas rosadas y gypsophila, envueltos en papel lila. Alegre y luminoso.",
+   "sec": "flores"
+  },
+  "base:p10.webp": {
+   "desc": "Rosas rosadas, margaritas en tonos durazno y gypsophila, envueltas en papel crema.",
+   "sec": "flores"
+  },
+  "base:p16.webp": {
+   "desc": "Lirios blancos, rosas en varios tonos, claveles y flores de temporada en copa dorada. Para agradecer, felicitar o acompañar.",
+   "sec": "flores"
+  },
+  "base:p9.webp": {
+   "desc": "Ramo de rosas azules con gypsophila y carritos Hot Wheels de colección. Un regalo diferente para él.",
+   "sec": "tematicos"
+  },
+  "base:p11.webp": {
+   "desc": "Caja estilo pista de carreras Hot Wheels con banderas a cuadros, llamas, lazo azul y tarjeta con mensaje personalizado.",
+   "sec": "tematicos"
+  },
+  "base:p8.webp": {
+   "desc": "Flores, frutas, uvas, frutos secos, embutidos, quesos, jugo y galletas, con decoración de Pokémon y el nombre de quien la recibe.",
+   "sec": "tematicos"
+  },
+  "base:p7.webp": {
+   "desc": "Bandeja con snacks, jugo, termo y decoración de Minecraft, con globos azules, lazos celestes y nombre personalizado.",
+   "sec": "tematicos"
+  },
+  "base:p12.webp": {
+   "desc": "Frutas, manzanas, postres, frutos secos, Ferrero Rocher y jugo, con decoración de Sailor Moon y el nombre en la base.",
+   "sec": "tematicos"
+  },
+  "base:p30.webp": {
+   "desc": "Frutas (uvas, manzanas y peras), jugo y decoración de Harry Potter con toppers, sombrero de mago y lazo rojo. Personalizada con el nombre.",
+   "sec": "tematicos"
+  },
+  "base:p14.webp": {
+   "desc": "Columna de globos rojos, amarillos, negros y blancos con número metalizado, globo de Pikachu y Pokébola.",
+   "sec": "globos"
+  },
+  "base:p22.webp": {
+   "desc": "Números metalizados oro rosa, estrella con nombre y base de globos crema con flores rosadas y perlas.",
+   "sec": "globos"
+  },
+  "base:p26.webp": {
+   "desc": "Números metalizados rosa con nombre, flor grande de globo con perlas y base en tonos verde menta y blanco.",
+   "sec": "globos"
+  },
+  "base:p27.webp": {
+   "desc": "Números 15 en oro rosa, estrella dorada con nombre, globos lila y dorados con lazos y figuras de globo. Para celebrar sus quince.",
+   "sec": "globos"
+  },
+  "base:p17.webp": {
+   "desc": "Corona de rosas en tonos durazno con gypsophila y mensaje Te amo mami al centro. Ideal para mamá.",
+   "sec": "madre"
+  },
+  "base:p18.webp": {
+   "desc": "Ramo de rosas rojas con gypsophila y eucalipto, envuelto en papel con borde dorado y tul rosado. Incluye tarjeta.",
+   "sec": "madre"
+  },
+  "base:p24.webp": {
+   "desc": "Bandeja romántica en rojo y rosa con copas, caja con foto, galletas, postre, chocolates, jugo y detalles de corazones, con lazo rojo.",
+   "sec": "sanvalentin"
+  },
+  "base:p19.webp": {
+   "desc": "Taza con diseño de la Catedral de Granada y la palabra Nicaragua.",
+   "sec": "personalizados"
+  }
+ }
+}

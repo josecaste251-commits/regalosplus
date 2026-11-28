@@ -56,6 +56,8 @@ main{max-width:1100px;margin:auto;padding:18px 16px}
 body.inicio .pick{display:inline-block}
 .add{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:999px;background:var(--rosa);border:1.5px dashed var(--cobre);font-weight:800;font-size:14px;color:var(--cobre)}
 .add:hover{background:var(--rosa2)}
+.add.carp{background:#fff;border-style:solid}
+.carp-link{font-size:13px;font-weight:700;color:var(--cobre);text-decoration:underline;width:100%}
 
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px}
 .sec-lbl{grid-column:1/-1;display:flex;align-items:center;gap:10px;margin:14px 0 2px;font-size:16px;font-weight:800;color:var(--salvia)}
@@ -134,6 +136,11 @@ body.inicio .pick{display:inline-block}
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
         Agregar fotos
       </button>
+      <button class="add carp" id="carpetaBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 11v5M9.5 13.5 12 16l2.5-2.5"/></svg>
+        Exportar de carpeta de fotos
+      </button>
+      <a class="carp-link" id="carpetaLink" target="_blank" rel="noopener">Abrir la carpeta para poner fotos</a>
     </div>
   </div>
   <div class="grid" id="grid"><div class="cargando">Cargando el catálogo…</div></div>
@@ -432,13 +439,13 @@ async function gitApi(path,opt={}){
   }
   throw new Error("git "+path+" "+ultimo);
 }
-async function guardarTanda(lista,dest){
+async function guardarTanda(lista,dest,borrar=[]){
   for(let n=0;n<6;n++){
     try{
       const ref=await gitApi("ref/heads/"+BRANCH);
       const padre=ref.object.sha;
       const com=await gitApi("commits/"+padre);
-      const arbol=await gitApi("trees",{method:"POST",body:JSON.stringify({base_tree:com.tree.sha,tree:lista.map(x=>({path:x.path,mode:"100644",type:"blob",sha:x.sha}))})});
+      const arbol=await gitApi("trees",{method:"POST",body:JSON.stringify({base_tree:com.tree.sha,tree:lista.map(x=>({path:x.path,mode:"100644",type:"blob",sha:x.sha})).concat(borrar.map(path=>({path,mode:"100644",type:"blob",sha:null})))})});
       const nuevo=await gitApi("commits",{method:"POST",body:JSON.stringify({message:`Organizador: ${lista.length} foto(s) nuevas en ${dest}`,tree:arbol.sha,parents:[padre]})});
       await gitApi("refs/heads/"+BRANCH,{method:"PATCH",sinReintento:true,body:JSON.stringify({sha:nuevo.sha})});
       return true;
@@ -494,6 +501,65 @@ $("fileIn").addEventListener("change",async e=>{
     subiendo=false; pantallaEncendida(false); programarGuardado(400);
   }
 });
+/* ====== Carpeta de fotos ======
+   Se ponen las fotos en precios/carpeta (desde GitHub, con el link "Abrir la carpeta")
+   y el botón las pasa a la sección elegida: las achica, las mete al catálogo y vacía la carpeta. */
+const CARPETA="precios/carpeta";
+$("carpetaLink").href=`https://github.com/${OWNER}/${REPO}/upload/${BRANCH}/${CARPETA}`;
+$("carpetaBtn").addEventListener("click",async()=>{
+  if(!token){ toast("Primero conectá el organizador"); abrirPanel(); return; }
+  if(subiendo){ toast("Esperá que termine la subida que está en curso"); return; }
+  let lista=[];
+  try{
+    const r=await fetch(API+CARPETA+"?ref="+BRANCH+"&t="+Date.now(),{headers:hdr(),cache:"no-store"});
+    if(r.ok) lista=(await r.json()).filter(f=>f.type==="file"&&/\.(jpe?g|png|webp|gif|avif|heic|heif)$/i.test(f.name));
+    else if(r.status!==404) throw 0;
+  }catch(e){ toast("No se pudo abrir la carpeta. Revisá la conexión."); return; }
+  if(!lista.length){ toast("La carpeta está vacía. Tocá \"Abrir la carpeta\" para poner fotos."); return; }
+  const dest=actual==="todas"?$("secPick").value:actual;
+  const sec=(SECCIONES.find(s=>s.id===dest)||{}).name||dest;
+  if(!confirm(`Hay ${lista.length} foto(s) en la carpeta.\n¿Pasarlas a la sección "${sec}"?`)) return;
+  subiendo=true; clearTimeout(timer); pantallaEncendida(true);
+  let hechos=0, subidas=0, fallas=0;
+  const avance=()=>toast(`Pasando fotos de la carpeta… ${hechos} de ${lista.length}. No cerrés la página.`);
+  avance();
+  try{
+    for(let ini=0; ini<lista.length; ini+=TANDA){
+      const parte=lista.slice(ini,ini+TANDA), listos=[], borrar=[];
+      let i=0;
+      const trabajador=async()=>{
+        while(i<parte.length){
+          const idx=ini+(i++), f=lista[idx];
+          try{
+            const orig=await (await fetch(f.download_url+(f.download_url.includes("?")?"&":"?")+"t="+Date.now(),{cache:"no-store"})).blob();
+            const blob=await achicar(orig);
+            const nombre=Date.now()+"-"+idx+"-"+(f.name.replace(/\.[^.]+$/,"").toLowerCase().normalize("NFD").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,40)||"foto")+".jpg";
+            const path=`${FOLDER}/${dest}/${nombre}`;
+            const b=await gitApi("blobs",{method:"POST",body:JSON.stringify({content:await aBase64(blob),encoding:"base64"})});
+            listos.push({path,sha:b.sha,blob,name:bonito(f.name)}); borrar.push(f.path);
+          }catch(err){ if(err.fatal) throw err; fallas++; }
+          hechos++; avance();
+        }
+      };
+      await Promise.all([trabajador(),trabajador()]);
+      if(!listos.length) continue;
+      if(!(await guardarTanda(listos,dest,borrar))){ fallas+=listos.length; continue; }
+      listos.forEach(x=>{
+        const key="gh:"+x.path, localSrc=URL.createObjectURL(x.blob);
+        ghFotos[key]={key,img:x.path,src:localSrc,sha:x.sha,sec:dest,name:x.name,origen:"gh"};
+        pend[key]={...(pend[key]||{}),img:x.path,sec:dest,name:x.name,price:0,desc:""};
+      });
+      subidas+=listos.length;
+      LS.set("rp_pend",pend); armar(); render(); pintarEstado();
+    }
+    toast(fallas?`Se pasaron ${subidas} de ${lista.length}. Las ${fallas} que faltan siguen en la carpeta: tocá el botón otra vez.`:`Listo: ${subidas} foto(s) pasadas a "${sec}". La carpeta quedó vacía.`);
+  }catch(err){
+    toast(err.fatal?"La clave ya no sirve. Conectá de nuevo.":`Se cortó. Se pasaron ${subidas}; las demás siguen en la carpeta.`);
+  }finally{
+    subiendo=false; pantallaEncendida(false); programarGuardado(400);
+  }
+});
+
 function achicar(file,max=1400){
   return new Promise(res=>{const img=new Image(),u=URL.createObjectURL(file);
     img.onload=()=>{const k=Math.min(1,max/Math.max(img.width,img.height));const c=document.createElement("canvas");c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext("2d").drawImage(img,0,0,c.width,c.height);c.toBlob(b=>{URL.revokeObjectURL(u);res(b||file)},"image/jpeg",.82)};

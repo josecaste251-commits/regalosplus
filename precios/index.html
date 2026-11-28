@@ -401,77 +401,97 @@ $("addBtn").addEventListener("click",()=>{
   if(!token){ toast("Primero conectá el organizador"); abrirPanel(); return; }
   $("fileIn").click();
 });
-/* Todas las fotos se suben primero como "blobs" (no chocan entre sí) y después
-   entran juntas en un solo guardado. Así no se pierde ninguna aunque sean muchas. */
+/* Subida de muchas fotos (probado para 100+):
+   - cada foto se sube como "blob" a un ritmo que GitHub acepta (~60 por minuto)
+   - se guardan en tandas de 20, así lo ya subido no se pierde si se corta
+   - si GitHub pide esperar, espera y sigue solo
+   - mantiene la pantalla encendida mientras sube */
 const GIT=`https://api.github.com/repos/${OWNER}/${REPO}/git/`;
 const espera=ms=>new Promise(r=>setTimeout(r,ms));
-let subiendo=false;
+const TANDA=20, RITMO=1000;
+let subiendo=false, ultimoEnvio=0;
+async function turno(){ const ahora=Date.now(), t=Math.max(ahora, ultimoEnvio+RITMO); ultimoEnvio=t; if(t>ahora) await espera(t-ahora); }
 async function gitApi(path,opt={}){
   let ultimo="";
-  for(let n=0;n<5;n++){
+  for(let n=0;n<8;n++){
     try{
+      if(opt.method) await turno();
       const r=await fetch(GIT+path,{...opt,headers:{...hdr(),"Content-Type":"application/json"},cache:"no-store"});
       if(r.status===401){const e=new Error("clave");e.fatal=true;throw e}
       if(r.ok) return await r.json();
       ultimo=r.status;
-      if(r.status===422&&opt.sinReintento) {const e=new Error("422");e.code=422;throw e}
+      if(r.status===422&&opt.sinReintento){const e=new Error("422");e.code=422;throw e}
+      if(r.status===403||r.status===429){
+        const ra=Number(r.headers.get("retry-after"))||0, reset=Number(r.headers.get("x-ratelimit-reset"))||0;
+        const ms=ra?ra*1000:(reset?Math.max(5000,reset*1000-Date.now()+1000):60000);
+        toast(`GitHub pidió una pausa. Sigue solo en ${Math.ceil(Math.min(ms,120000)/1000)} s… no cerrés la página`);
+        await espera(Math.min(ms,120000)); continue;
+      }
     }catch(e){ if(e.fatal||e.code===422) throw e; ultimo=e.message; }
-    await espera(800*(n+1));
+    await espera(1000*(n+1));
   }
   throw new Error("git "+path+" "+ultimo);
 }
+async function guardarTanda(lista,dest){
+  for(let n=0;n<6;n++){
+    try{
+      const ref=await gitApi("ref/heads/"+BRANCH);
+      const padre=ref.object.sha;
+      const com=await gitApi("commits/"+padre);
+      const arbol=await gitApi("trees",{method:"POST",body:JSON.stringify({base_tree:com.tree.sha,tree:lista.map(x=>({path:x.path,mode:"100644",type:"blob",sha:x.sha}))})});
+      const nuevo=await gitApi("commits",{method:"POST",body:JSON.stringify({message:`Organizador: ${lista.length} foto(s) nuevas en ${dest}`,tree:arbol.sha,parents:[padre]})});
+      await gitApi("refs/heads/"+BRANCH,{method:"PATCH",sinReintento:true,body:JSON.stringify({sha:nuevo.sha})});
+      return true;
+    }catch(err){ if(err.fatal) throw err; await espera(1500*(n+1)); }
+  }
+  return false;
+}
+let wake=null;
+async function pantallaEncendida(on){
+  try{ if(on&&"wakeLock" in navigator){wake=await navigator.wakeLock.request("screen")} else if(!on&&wake){await wake.release();wake=null} }catch(e){}
+}
+window.addEventListener("beforeunload",e=>{ if(subiendo){e.preventDefault();e.returnValue=""} });
 $("fileIn").addEventListener("change",async e=>{
   const files=[...e.target.files]; e.target.value=""; if(!files.length) return;
   if(subiendo){ toast("Esperá que terminen de subir las fotos anteriores"); return; }
-  subiendo=true; clearTimeout(timer);
+  subiendo=true; clearTimeout(timer); pantallaEncendida(true);
   const dest=actual==="todas"?$("secPick").value:actual;
-  const listos=[]; let hechos=0, fallas=0;
-  const avance=()=>toast(`Subiendo fotos… ${hechos} de ${files.length}`);
+  let hechos=0, subidas=0, fallas=0;
+  const avance=()=>toast(`Subiendo fotos… ${hechos} de ${files.length}. No cerrés la página.`);
   avance();
   try{
-    // 1) preparar y subir cada foto (de 3 en 3)
-    let i=0;
-    const trabajador=async()=>{
-      while(i<files.length){
-        const idx=i++, f=files[idx];
-        try{
-          const blob=await achicar(f);
-          const nombre=Date.now()+"-"+idx+"-"+(f.name.replace(/\.[^.]+$/,"").toLowerCase().normalize("NFD").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,40)||"foto")+".jpg";
-          const path=`${FOLDER}/${dest}/${nombre}`;
-          const b=await gitApi("blobs",{method:"POST",body:JSON.stringify({content:await aBase64(blob),encoding:"base64"})});
-          listos.push({path,sha:b.sha,blob,name:bonito(f.name)});
-        }catch(err){ if(err.fatal) throw err; fallas++; }
-        hechos++; avance();
-      }
-    };
-    await Promise.all([trabajador(),trabajador(),trabajador()]);
-    if(!listos.length) throw new Error("ninguna");
-    // 2) meterlas todas juntas en un solo guardado (se reintenta si algo cambió mientras tanto)
-    toast("Guardando las fotos en el catálogo…");
-    let ok=false;
-    for(let n=0;n<5&&!ok;n++){
-      try{
-        const ref=await gitApi("ref/heads/"+BRANCH);
-        const padre=ref.object.sha;
-        const com=await gitApi("commits/"+padre);
-        const arbol=await gitApi("trees",{method:"POST",body:JSON.stringify({base_tree:com.tree.sha,tree:listos.map(x=>({path:x.path,mode:"100644",type:"blob",sha:x.sha}))})});
-        const nuevo=await gitApi("commits",{method:"POST",body:JSON.stringify({message:`Organizador: ${listos.length} foto(s) nuevas en ${dest}`,tree:arbol.sha,parents:[padre]})});
-        await gitApi("refs/heads/"+BRANCH,{method:"PATCH",sinReintento:true,body:JSON.stringify({sha:nuevo.sha})});
-        ok=true;
-      }catch(err){ if(err.fatal) throw err; await espera(1000*(n+1)); }
+    for(let ini=0; ini<files.length; ini+=TANDA){
+      const parte=files.slice(ini,ini+TANDA), listos=[];
+      let i=0;
+      const trabajador=async()=>{
+        while(i<parte.length){
+          const idx=ini+(i++), f=files[idx];
+          try{
+            const blob=await achicar(f);
+            const nombre=Date.now()+"-"+idx+"-"+(f.name.replace(/\.[^.]+$/,"").toLowerCase().normalize("NFD").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,40)||"foto")+".jpg";
+            const path=`${FOLDER}/${dest}/${nombre}`;
+            const b=await gitApi("blobs",{method:"POST",body:JSON.stringify({content:await aBase64(blob),encoding:"base64"})});
+            listos.push({path,sha:b.sha,blob,name:bonito(f.name)});
+          }catch(err){ if(err.fatal) throw err; fallas++; }
+          hechos++; avance();
+        }
+      };
+      await Promise.all([trabajador(),trabajador()]);
+      if(!listos.length) continue;
+      if(!(await guardarTanda(listos,dest))){ fallas+=listos.length; continue; }
+      listos.forEach(x=>{
+        const key="gh:"+x.path, localSrc=URL.createObjectURL(x.blob);
+        ghFotos[key]={key,img:x.path,src:localSrc,sha:x.sha,sec:dest,name:x.name,origen:"gh"};
+        pend[key]={...(pend[key]||{}),img:x.path,sec:dest,name:x.name,price:0,desc:""};
+      });
+      subidas+=listos.length;
+      LS.set("rp_pend",pend); armar(); render(); pintarEstado();
     }
-    if(!ok) throw new Error("commit");
-    listos.forEach(x=>{
-      const key="gh:"+x.path, localSrc=URL.createObjectURL(x.blob);
-      ghFotos[key]={key,img:x.path,src:localSrc,sha:x.sha,sec:dest,name:x.name,origen:"gh"};
-      pend[key]={...(pend[key]||{}),img:x.path,sec:dest,name:x.name,price:0,desc:""};
-    });
-    LS.set("rp_pend",pend); armar(); render(); pintarEstado();
-    toast(fallas?`Se subieron ${listos.length} de ${files.length}. Volvé a elegir las ${fallas} que faltan.`:`Listo: ${listos.length} foto(s) subidas. Ponele precio y descripción.`);
+    toast(fallas?`Se subieron ${subidas} de ${files.length}. Volvé a elegir las ${fallas} que faltan.`:`Listo: ${subidas} foto(s) subidas. Ponele precio y descripción.`);
   }catch(err){
-    toast(err.fatal?"La clave ya no sirve. Conectá de nuevo.":"No se pudieron guardar las fotos. Revisá la conexión e intentá otra vez.");
+    toast(err.fatal?"La clave ya no sirve. Conectá de nuevo.":`Se cortó la subida. Quedaron guardadas ${subidas} de ${files.length}.`);
   }finally{
-    subiendo=false; programarGuardado(400);
+    subiendo=false; pantallaEncendida(false); programarGuardado(400);
   }
 });
 function achicar(file,max=1400){

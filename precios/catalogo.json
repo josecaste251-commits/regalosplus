@@ -1,6 +1,6 @@
 {
  "v": 1,
- "actualizado": "2026-11-28T03:56:23.749Z",
+ "actualizado": "2026-11-28T03:57:36.219Z",
  "items": {
   "base:p4.webp": {
    "desc": "Peluche de Snoopy, globos metalizados con el número de años y estrellas, rosas rosadas, girasoles mini y chocolates Snickers. Base de madera rosada con lazo.",
@@ -120,6 +120,27 @@
   },
   "gh:precios/fotos/cumpleanos/1795838179271-0a2cb56e-040c-47ea-91a2-fdeb0e0b92bb-2.webp": {
    "img": "precios/fotos/cumpleanos/1795838179271-0a2cb56e-040c-47ea-91a2-fdeb0e0b92bb-2.webp",
+   "sec": "cumpleanos",
+   "name": "0a2cb56e 040c 47ea 91a2 fdeb0e0b92bb 2",
+   "price": 0,
+   "desc": ""
+  },
+  "gh:precios/fotos/cumpleanos/1795838246482-0f64f874-faff-4ef8-b147-b5ef0b152173-2.webp": {
+   "img": "precios/fotos/cumpleanos/1795838246482-0f64f874-faff-4ef8-b147-b5ef0b152173-2.webp",
+   "sec": "cumpleanos",
+   "name": "0f64f874 faff 4ef8 b147 b5ef0b152173 2",
+   "price": 0,
+   "desc": ""
+  },
+  "gh:precios/fotos/cumpleanos/1795838249680-0d957fb8-f03e-41c5-983a-3baad2aad35a.webp": {
+   "img": "precios/fotos/cumpleanos/1795838249680-0d957fb8-f03e-41c5-983a-3baad2aad35a.webp",
+   "sec": "cumpleanos",
+   "name": "0d957fb8 f03e 41c5 983a 3baad2aad35a",
+   "price": 0,
+   "desc": ""
+  },
+  "gh:precios/fotos/cumpleanos/1795838252334-0a2cb56e-040c-47ea-91a2-fdeb0e0b92bb-2.webp": {
+   "img": "precios/fotos/cumpleanos/1795838252334-0a2cb56e-040c-47ea-91a2-fdeb0e0b92bb-2.webp",
    "sec": "cumpleanos",
    "name": "0a2cb56e 040c 47ea 91a2 fdeb0e0b92bb 2",
    "price": 0,

@@ -1,6 +1,6 @@
 {
  "v": 1,
- "actualizado": "2026-11-28T03:48:58.655Z",
+ "actualizado": "2026-11-28T03:56:23.749Z",
  "items": {
   "base:p4.webp": {
    "desc": "Peluche de Snoopy, globos metalizados con el número de años y estrellas, rosas rosadas, girasoles mini y chocolates Snickers. Base de madera rosada con lazo.",
@@ -117,6 +117,13 @@
   "base:p19.webp": {
    "desc": "Taza con diseño de la Catedral de Granada y la palabra Nicaragua.",
    "sec": "personalizados"
+  },
+  "gh:precios/fotos/cumpleanos/1795838179271-0a2cb56e-040c-47ea-91a2-fdeb0e0b92bb-2.webp": {
+   "img": "precios/fotos/cumpleanos/1795838179271-0a2cb56e-040c-47ea-91a2-fdeb0e0b92bb-2.webp",
+   "sec": "cumpleanos",
+   "name": "0a2cb56e 040c 47ea 91a2 fdeb0e0b92bb 2",
+   "price": 0,
+   "desc": ""
   }
  }
 }

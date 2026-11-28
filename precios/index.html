@@ -56,6 +56,9 @@ main{max-width:1100px;margin:auto;padding:18px 16px}
 body.inicio .pick{display:inline-block}
 .add{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:999px;background:var(--rosa);border:1.5px dashed var(--cobre);font-weight:800;font-size:14px;color:var(--cobre)}
 .add:hover{background:var(--rosa2)}
+.btns{display:flex;gap:8px;width:100%;align-items:stretch}
+.btns .add{flex:1;justify-content:center;text-align:center;line-height:1.2;padding:10px 12px}
+.btns .add svg{flex:none}
 .add.carp{background:#fff;border-style:solid}
 .carp-link{font-size:13px;font-weight:700;color:var(--cobre);text-decoration:underline;width:100%}
 
@@ -132,6 +135,7 @@ body.inicio .pick{display:inline-block}
     <div><h2 id="secTitle">Todas las fotos</h2><p id="secDesc"></p></div>
     <div class="acts">
       <select class="pick" id="secPick" aria-label="Sección de las fotos nuevas"></select>
+      <div class="btns">
       <button class="add" id="addBtn">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
         Agregar fotos
@@ -140,6 +144,7 @@ body.inicio .pick{display:inline-block}
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 11v5M9.5 13.5 12 16l2.5-2.5"/></svg>
         Exportar de carpeta de fotos
       </button>
+      </div>
       <a class="carp-link" id="carpetaLink" target="_blank" rel="noopener">Abrir la carpeta para poner fotos</a>
     </div>
   </div>
